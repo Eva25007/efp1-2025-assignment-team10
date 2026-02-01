@@ -1,4 +1,5 @@
 from services import Digital_Prescription
+from datetime import datetime  ### ΕΠΑΛΗΘΕΥΣΗ: ΠΡΟΣΘΗΚΗ ΕΙΣΑΓΩΓΗΣ
 
 def main():
     system = Digital_Prescription()
@@ -8,6 +9,7 @@ def main():
     while True:
         print("\n=== ΚΕΝΤΡΙΚΟ ΜΕΝΟΥ ===")
         print("1. Ιατρός (Συνταγογράφηση)")
+        print("2. Φαρμακοποιός (Εκτέλεση Συνταγής)")
         print("0. Έξοδος")
         
         role = input("Επιλέξτε ρόλο: ")
@@ -32,15 +34,32 @@ def main():
                         print("Ο ασθενής δεν βρέθηκε.")
                         continue
                     
-                    barcode = input("Barcode Φαρμάκου: ")
-                    drug = system.find_drug(barcode)
-                    if not drug:
-                        print("Το φάρμακο δεν βρέθηκε.")
+                    drugs = []
+                    while True:
+                        barcode = input("Barcode Φαρμάκου (ή 'τέλος' για ολοκλήρωση): ")
+                        if barcode.lower() == 'τέλος':
+                            break
+                        
+                        drug = system.find_drug(barcode)
+                        if not drug:
+                            print("Το φάρμακο δεν βρέθηκε.")
+                            continue
+                        
+                        drugs.append(drug)
+                        print(f"Προστέθηκε: {drug.name}")
+                    
+                    if not drugs:
+                        print("Πρέπει να προσθέσετε τουλάχιστον ένα φάρμακο.")
                         continue
+						
                     
                     diagnosis = input("Διάγνωση: ")
-                    presc = system.create_prescription(doctor, patient, drug, diagnosis)
-                    print(f"Επιτυχία! ID Συνταγής: {presc.prescription_id}")
+                    presc = system.create_prescription(doctor, patient, drugs, diagnosis)
+                    print(f"\n✓ Επιτυχία! Δημιουργήθηκε Συνταγή")
+                    print(f"  ID Συνταγής: {presc.prescription_id}")
+                    print(f"  Barcode: {presc.barcode}")
+                    print(f"  Ασθενής: {patient.surname} {patient.name}")
+                    print(f"  Πλήθος φαρμάκων: {len(drugs)}")
                     if presc.is_intangible:
                         print("(Στάλθηκε SMS λόγω Άυλης)")
                     else:
@@ -49,7 +68,10 @@ def main():
                 elif sub_choice == "0":
                     break
         ## End of Doctor Menu
+        
+       
 
+       
     
         elif role == "0":
             print("Αντίο!")

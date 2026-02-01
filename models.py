@@ -1,3 +1,5 @@
+import uuid
+
 class User: # USER (υπερκλάση / super) από εδώ κληρονομούν Ιατρός, Φαρμακοποιός και Ασθενής
     def __init__(self, name: str, 
                  surname: str, 
@@ -61,3 +63,29 @@ class Patient(User): # AΣΘΕΝΗΣ
         \n [Διεύθυνση: {self.address}]
         \n [Τηλέφωνο: {self.phone_number}]
         \n [Ασφαλιστικός Φορέας: {self.insurance_provider}]"""
+		
+class Drug:
+    def __init__(self, name: str, barcode: str, price: float, active_substance: str = "", form: str = ""):
+        self.name = name
+        self.barcode = barcode
+        self.price = price
+        self.active_substance = active_substance
+        self.form = form
+
+    def __str__(self):
+        return f"{self.name} ({self.barcode}) - {self.price}€"
+
+class Prescription:
+    def __init__(self, prescription_id: int, doctor: Doctor, patient: Patient, drugs: list, diagnosis: str):
+        self.prescription_id = prescription_id
+        self.barcode = str(uuid.uuid4())[:8]  # Βάζουμε barcode για τη συνταγή
+        self.doctor = doctor
+        self.patient = patient
+        self.drugs = drugs  # Λίστα από Drug αντικείμενα
+        self.diagnosis = diagnosis
+        self.is_intangible = patient.has_intangible_perscription
+        self.scanned_drugs = []  # Λίστα για τα φάρμακα που έχουν σαρωθεί
+        self.execution_date = None
+        self.execution_time = None
+        self.executed_by = None  # Άδεια φαρμακείου που εκτέλεσε
+        self.is_executed = False
