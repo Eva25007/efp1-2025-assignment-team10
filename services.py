@@ -39,18 +39,18 @@ class Digital_Prescription:
         patient1 = self.find_patient("amka100")
         drugs1 = [self.find_drug("DRUG001"), self.find_drug("DRUG003")]
         
-        if doctor1 and patient1 and all(drugs1):
-            self.create_prescription(doctor1, patient1, drugs1, "Βρογχοπνευμονία")
-
         doctor2 = self.find_doctor("licence200")
         patient2 = self.find_patient("amka200")
         drugs2 = [self.find_drug("DRUG002")]
-        
-        if doctor2 and patient2 and all(drugs2):
-            self.create_prescription(doctor2, patient2, drugs2, "Πυρετός")
 
+        dummy_presc = self.create_prescription(doctor1, patient1, drugs1, "Βρογχοπνευμονία")
+        dummy_presc.barcode = "demo100"
+
+        dummy_presc = self.create_prescription(doctor2, patient2, drugs2, "Πονοκέφαλος")
+        dummy_presc.barcode = "demo200"
         
     # General Functions
+
     def find_doctor(self, license_id: str) -> Doctor | None:
         return next((d for d in self.doctors if d.medical_license_id == license_id), None)
 
@@ -77,62 +77,12 @@ class Digital_Prescription:
         return p
     
     #Functions Φαρμακοποιού
-    def scan_drug(self, drug_barcode: str) -> str:
-        """Σάρωση φαρμάκου και επιστροφή status"""
-        # Έλεγχος αν το φάρμακο είναι στη συνταγή
-        drug_found = None
-        for drug in self.drugs:
-            if drug.barcode == drug_barcode:
-                drug_found = drug
-                break
-        
-        if not drug_found:
-            return "not_found"
-        
-        # Έλεγχος αν έχει ήδη σαρωθεί
-        if drug_barcode in self.scanned_drugs:
-            return "already_scanned"
-        
-        # Προσθήκη στη λίστα σαρωμένων
-        self.scanned_drugs.append(drug_barcode)
-        return "scanned"
-    
-    ### ΕΠΑΛΗΘΕΥΣΗ: ΜΕΘΟΔΟΣ ΓΙΑ ΕΠΑΛΗΘΕΥΣΗ ΦΑΡΜΑΚΟΥ
-    def verify_drug(self, drug_barcode: str) -> tuple[bool, str]:
-        """
-        Επαληθεύει αν το φάρμακο ανήκει στη συνταγή.
-        Επιστρέφει (success, message)
-        """
-        # Έλεγχος αν το φάρμακο είναι στη συνταγή
-        drug_found = None
-        for drug in self.drugs:
-            if drug.barcode == drug_barcode:
-                drug_found = drug
-                break
-        
-        if not drug_found:
-            return False, "Λάθος Φάρμακο / Μη έγκυρο"
-        
-        # Έλεγχος αν έχει ήδη σαρωθεί
-        if drug_barcode in self.scanned_drugs:
-            return True, "Το φάρμακο έχει ήδη επαληθευτεί"
-        
-        # Προσθήκη στη λίστα σαρωμένων
-        self.scanned_drugs.append(drug_barcode)
-        return True, "Επιτυχής επαλήθευση"
-    ### ΤΕΛΟΣ ΕΠΑΛΗΘΕΥΣΗΣ
 
-    def execute(self, pharmacy_license_id: str) -> bool:
-        """Εκτέλεση συνταγής αν όλα τα φάρμακα έχουν σαρωθεί"""
-        if len(self.scanned_drugs) == len(self.drugs):
-            from datetime import datetime
-            now = datetime.now()
-            self.execution_date = now.strftime("%Y-%m-%d")
-            self.execution_time = now.strftime("%H:%M:%S")
-            self.executed_by = pharmacy_license_id
-            self.is_executed = True
-            return True
-        return False
+    def scan_drug_for_prescription(self, drug_barcode, prescription):
+        return prescription.scan_drug(drug_barcode)
+
+    def execute(self, pharmacy_license_id, prescription):
+        return prescription.execute(pharmacy_license_id)
 
     def __str__(self):
         status = "ΕΚΤΕΛΕΣΜΕΝΗ" if self.is_executed else "ΕΚΚΡΕΜΕΙ"
